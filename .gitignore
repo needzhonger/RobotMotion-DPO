@@ -1,0 +1,16 @@
+# Local datasets and generated training artifacts
+data/
+outputs/
+outputs_smoke/
+predictions/
+wandb/
+
+# Python caches and environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local tooling metadata
+.agents/
+.codex/
