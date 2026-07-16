@@ -96,3 +96,9 @@ print(rewards.describe())
 The reward evaluator runs only during offline preference construction. During
 training, gradients flow through policy winner/loser denoising losses; the
 frozen reference model and reward metrics never receive gradients.
+
+The default `reward_config.py` enables only `motion_smoothness_reward`, a
+simulator-free smoke-test reward equal to the negative mean squared second-order
+temporal difference. It expects normalized motion `[T, D]` and optionally reads
+`condition["mask"]`. Smoothness alone can favor low-activity motion, so combine
+or replace it with task/control rewards for real training.

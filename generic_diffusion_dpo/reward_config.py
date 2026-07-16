@@ -1,7 +1,7 @@
 """Central configuration for selecting and weighting preference rewards."""
 
 from .preference import RewardSuite, RewardTerm
-from .reward_functions import control_reward, simulation_reward
+from .reward_functions import control_reward, motion_smoothness_reward, simulation_reward
 
 
 def build_reward_suite() -> RewardSuite:
@@ -18,13 +18,21 @@ def build_reward_suite() -> RewardSuite:
                 weight=1.0,
                 higher_is_better=False,  # Error: lower is better.
                 margin=0.0,
-                enabled=True,
+                enabled=False,
             ),
             RewardTerm(
                 name="simulation_error",
                 evaluator=simulation_reward,
                 weight=0.1,
                 higher_is_better=False,
+                margin=0.0,
+                enabled=False,
+            ),
+            RewardTerm(
+                name="motion_smoothness",
+                evaluator=motion_smoothness_reward,
+                weight=1.0,
+                higher_is_better=True,  # Less negative is smoother and better.
                 margin=0.0,
                 enabled=True,
             ),
