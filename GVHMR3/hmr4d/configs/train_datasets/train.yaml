@@ -1,0 +1,11 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassPthDataset
+  data_dir: "g1_paired/train"
+  pth_path: "smplxpose_v2.pth"
+  g1_subdir: "g1"
+  amass_fps: 30.0
+  # 仅保留 x,y 两轴 LSQ 系数 ∈ [0.7, 1.05] 的配对动作; z 不限
+  ratio_lo: [0.7, 0.7, -.inf]
+  ratio_hi: [1.05, 1.05, .inf]
+  ratio_thr: 0.1                  # per-frame 与 per-seq 阈值都用 0.1 m
+  skip_substrings: ["weiz"]       # Weizmann (skip_moyo=True 时会自动追加 moyo_smplxn)

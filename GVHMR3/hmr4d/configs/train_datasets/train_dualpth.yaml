@@ -1,0 +1,28 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDualPthDataset
+  # 数据源: filtered_amass.pth (y-up) + filtered_g1.pth (y-up). 8013 对配对动作.
+  amass_pth_path: "filtered_amass.pth"
+  g1_pth_path:    "filtered_g1.pth"
+  # filtered_g1.pth 是 y-up; 设 g1_input_is_yup=true 让 dataset 内部 ay_to_az 转 z-up,
+  # 再走既有 canonicalize→az_to_ay 链路, 保证机器人站立姿态正确.
+  g1_input_is_yup: true
+  amass_fps: 30.0
+  motion_frames: 120
+  cam_augmentation: "v11"
+  canonicalize_first_frame: true
+  align_target: "pelvis"
+  floor_adjust: true
+  # 首帧归一化只去 yaw(航向), 保留 pitch/roll, 重力方向严格保持 -y, 与 gravity-view 编码自洽.
+  # false 回退到旧的"去整个 R0"行为(首帧倾斜会把重力轴转歪).
+  yaw_only_canon: true
+  apply_az_to_ay_g1: true
+  # train/val/test 公共 key 上做 90/5/5 随机切分 (固定 seed)
+  split: "train"
+  split_seed: 42
+  split_ratios: [0.9, 0.05, 0.05]
+  # 仅保留 x,y 两轴 LSQ 系数 ∈ [0.7, 1.05] 的配对动作; z 不限
+  ratio_lo: [0.7, 0.7, -.inf]
+  ratio_hi: [1.05, 1.05, .inf]
+  ratio_thr: 0.1
+  # filtered_*.pth 上游已过滤, 默认不再黑名单. 如需追加, 例: ["weiz", "moyo_smplxn"]
+  skip_substrings: []

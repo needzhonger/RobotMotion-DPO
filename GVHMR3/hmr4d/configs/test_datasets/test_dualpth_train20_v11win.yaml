@@ -1,0 +1,30 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDualPthDataset
+  amass_pth_path: "filtered_amass.pth"
+  g1_pth_path:    "filtered_g1.pth"
+  g1_input_is_yup: true
+  amass_fps: 30.0
+  motion_frames: 120
+  # 忠实训练数据路径: 120 帧窗口化 (非整段), v11 动态相机增强.
+  full_sequence: false
+  # 必须 false: 需要 g1_target GT 机器人 (GT 面板 + pred root 锚到 GT root[0]).
+  amass_only: false
+  cam_augmentation: "v11"
+  canonicalize_first_frame: true
+  # 训练默认: 首帧只去 yaw, 保留 pitch/roll, 重力轴不歪. 显式写出保险.
+  yaw_only_canon: true
+  align_target: "pelvis"
+  floor_adjust: true
+  apply_az_to_ay_g1: true
+  # val/test 确定性路径 (按 idx reseed → v11 逐 idx 可复现), 但 key 池抽 train.
+  # 这样单独生成的 pred 与后续 hepta 渲染的 GT/相机用同一 idx 复现同一样本.
+  split: "test"
+  split_seed: 42
+  split_ratios: [0.9, 0.05, 0.05]
+  subset_split: "train"
+  subset_n: 20
+  subset_seed: 7              # 换 seed 就拿不同 20 条
+  ratio_lo: [0.7, 0.7, -.inf]
+  ratio_hi: [1.05, 1.05, .inf]
+  ratio_thr: 0.1
+  skip_substrings: []

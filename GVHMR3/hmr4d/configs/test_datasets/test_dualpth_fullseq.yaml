@@ -1,0 +1,23 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDualPthDataset
+  amass_pth_path: "filtered_amass.pth"
+  g1_pth_path:    "filtered_g1.pth"
+  g1_input_is_yup: true
+  amass_fps: 30.0
+  motion_frames: 120
+  # 关键 1: 整段一次进网络 (RoPE + sliding-window attn mask 自动接管 L>max_len).
+  full_sequence: true
+  # 关键 2: 静止单一相机, 跟训练 40% 的 static 类同源, 避免长序列 push-away/cam_angvel OOD.
+  cam_augmentation: "static_v11"
+  canonicalize_first_frame: true
+  align_target: "pelvis"
+  floor_adjust: true
+  apply_az_to_ay_g1: true
+  split: "test"
+  split_seed: 42
+  split_ratios: [0.9, 0.05, 0.05]
+  # ratio filter 在 val/test 不会跳样本 (g1_amass.py:1948-1949), 这里保留以防误用
+  ratio_lo: [0.7, 0.7, -.inf]
+  ratio_hi: [1.05, 1.05, .inf]
+  ratio_thr: 0.1
+  skip_substrings: []

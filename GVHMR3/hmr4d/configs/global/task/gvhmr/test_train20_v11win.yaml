@@ -1,0 +1,32 @@
+# @package _global_
+# 忠实复现训练数据路径: train 集抽 20 条, 120 帧窗口化 + v11 动态相机增强,
+# 走 test deterministic pipeline (按 idx reseed → v11 可复现) dump npz.
+# 配套 tools/blender_viz_hepta.py 做 7-panel 对比可视化.
+#
+# 用法:
+#     python tools/train.py exp=gvhmr/g1_dualpth global/task=gvhmr/test_train20_v11win \
+#         exp_name_var=_j2dchange \
+#         ckpt_path=outputs/g1_amass_dualpth/g1_dualpth_j2dchange/checkpoints/e469-s064390.ckpt
+#
+# 关键:
+#   - test_dualpth_train20_v11win: full_sequence=false (120 帧窗), cam_augmentation="v11"
+#     (动态相机), amass_only=false (带 GT G1, pred root 锚到 GT root[0]).
+#   - self.split="test" → 按 (split_seed, idx) reseed, v11 逐 idx 可复现, 让 pred 与 hepta
+#     渲染的 GT/相机完全匹配.
+defaults:
+  - override /data: mocap/testY
+  - override /test_datasets:
+      - test_dualpth_train20_v11win
+  - override /callbacks:
+      - prediction_writer/g1_dualpth
+  - _self_
+
+task: test
+data_name: g1_dualpth_train20_v11win
+ckpt_path: ???
+
+pl_trainer:
+  devices: 1
+  precision: 32
+
+logger: null

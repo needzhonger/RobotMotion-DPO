@@ -1,0 +1,13 @@
+bones_seed:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.BonesSeedG1SomaDataset
+  data_dir: "/mnt/ddn/shared/datasets/humanoid/bones_seed_g1_soma_pair"
+  motion_frames: 120
+  cam_augmentation: "v11"
+  canonicalize_first_frame: true
+  yaw_only_canon: true
+  floor_adjust: true
+  split: "train"
+  split_seed: 42
+  split_ratios: [0.9, 0.05, 0.05]
+  dof_pos_order: "mjc"
+  soma_obs_indices: [6, 7, 9, 15, 10, 16, 11, 17, 20, 24, 21, 25, 22, 26]

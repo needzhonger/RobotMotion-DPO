@@ -1,0 +1,30 @@
+# @package _global_
+# 跑 train 集随机抽 20 条做整段推理, 走 test pipeline (full_sequence + static_v11 + dump npz).
+# 主要用途: 看模型在 train 集上的整段一致性, 给 blender_viz_triplet_amass_g1 喂数据.
+#
+# 用法:
+#     python tools/train.py exp=gvhmr/g1_dualpth global/task=gvhmr/test_train20 \
+#         ckpt_path=outputs/g1_amass_dualpth/g1_dualpth_v1/checkpoints/eXXX-sYYYYYY.ckpt
+#
+# 关键:
+#   - dataset 用 subset_split="train" + subset_n=20 抽 20 条 train key, 但 self.split="test"
+#     走 deterministic 路径 (无 speed-aug, 无 ratio_filter), 整段一次喂网络.
+#   - amass_only=true: 推理时模型完全不碰 G1 GT, root anchor 走 (0, 0.793, 0) fallback.
+#     viz 那一步会从 filtered_g1.pth 独立加载 GT G1, 跟 dataset 是不是 amass_only 无关.
+defaults:
+  - override /data: mocap/testY
+  - override /test_datasets:
+      - test_dualpth_train20
+  - override /callbacks:
+      - prediction_writer/g1_dualpth
+  - _self_
+
+task: test
+data_name: g1_dualpth_train20
+ckpt_path: ???
+
+pl_trainer:
+  devices: 1
+  precision: 32
+
+logger: null

@@ -1,0 +1,28 @@
+# @package _global_
+# 推理 + 定量评估: 对 G1 diffusion 模型跑测试集, 计算 cr_mpjpe / wa2_mpjpe / rte / jitter / dof_mae.
+#
+# 用法:
+#     python tools/train.py exp=gvhmr/g1_dualpth global/task=gvhmr/test_g1_metric \
+#         ckpt_path=outputs/g1_amass_dualpth/g1_dualpth_v1/checkpoints/e499-sxxxxxx.ckpt
+#
+# 单样本扩散推理 (n_samples=1, 默认). 如需 best-of-N 改成 metric_g1_best5:
+#     ... global/task=gvhmr/test_g1_metric callbacks=[...,metric_g1_best5]
+
+defaults:
+  - override /data: mocap/testY
+  - override /test_datasets:
+      - test_dualpth
+  - override /callbacks:
+      - metric_g1
+  - _self_
+
+task: test
+seed: null    # 不固定随机种子, 每次 diffusion 采样结果不同
+data_name: g1_amass_test
+ckpt_path: ???    # 命令行必传
+
+pl_trainer:
+  devices: 1
+  precision: 32   # 全精度推理, 避免 bf16 在长序列 attn 下偶发 NaN
+
+logger: null

@@ -1,0 +1,5 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDataset
+  data_dir: "g1_paired/val"
+  amass_subdir: "amass_test"
+  g1_subdir: "g1_test"

@@ -1,0 +1,33 @@
+# @package _global_
+# AMASS-only 推理: 只用 filtered_amass.pth, 不用 filtered_g1.pth, 输出 G1 motion npz.
+#
+# 用法:
+#     python tools/train.py exp=gvhmr/g1_dualpth global/task=gvhmr/test_amass_only \
+#         ckpt_path=outputs/g1_amass_dualpth/g1_dualpth_v1/checkpoints/eXXX-sYYYYYY.ckpt
+#
+# 关键设计:
+#   - test_amass_only_fullseq: full_sequence=true + amass_only=true + static_v11
+#       一条 AMASS motion 一次性进网络;
+#       不读 filtered_g1.pth (推理路径不需要 GT G1, 只需要 root anchor, 走 fallback);
+#       静止相机模拟训练 40% 的 static 类.
+#   - prediction_writer.g1_dualpth: on_test_start 设 pl_module.skip_val_loss=True,
+#       关掉 validation_step 里的 train=True forward (省一次 forward, 也避免没有 GT G1
+#       时 encode_g1 崩); on_test_batch_end 直接 consume validation_step 返回的 outputs,
+#       不再单独跑 forward.
+defaults:
+  - override /data: mocap/testY
+  - override /test_datasets:
+      - test_amass_only_fullseq
+  - override /callbacks:
+      - prediction_writer/g1_dualpth
+  - _self_
+
+task: test
+data_name: g1_amass_only_fullseq
+ckpt_path: ???   # 命令行必传
+
+pl_trainer:
+  devices: 1
+  precision: 32   # train.py:79-81 也会强制 precision=32, 这里冗余声明
+
+logger: null

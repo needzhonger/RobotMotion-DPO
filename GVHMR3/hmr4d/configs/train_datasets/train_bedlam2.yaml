@@ -1,0 +1,16 @@
+bedlam2:
+  _target_: hmr4d.dataset.bedlam.bedlam.Bedlam2G1Dataset
+  data_dir: "/mnt/ddn/tianyi/PHUMA/data/filtered_bedlam2"
+  bbox_pth_path: "/mnt/ddn/tianyi/PHUMA/data/filtered_bedlam2_bbox/filtered_bedlam2_bboxes.pth"
+  vitpose_pth_path: "/mnt/ddn/tianyi/PHUMA/data/filtered_bedlam2_vitpose/filtered_bedlam2_vitpose.pth"
+  imgfeat_pth_path: "/mnt/ddn/tianyi/PHUMA/data/filtered_bedlam2_imgfeat/filtered_bedlam2_imgfeat.pth"
+  imgfeat_dir: null
+  motion_frames: 120
+  min_motion_frames: 60
+  g1_input_is_yup: false
+  dof_pos_order: "mjc"
+  canonicalize_first_frame: true
+  floor_adjust: true
+  split: "train"
+  split_seed: 42
+  split_ratios: [0.9, 0.05, 0.05]

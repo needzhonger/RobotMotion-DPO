@@ -1,0 +1,54 @@
+# @package _global_
+# 4-GPU mixed G1 training: AMASS dualpth + BEDLAM2, train/val only.
+defaults:
+    - gvhmr/g1_dualpth
+    - override /train_datasets:
+          - train_dualpth
+          - train_bedlam2
+    - override /test_datasets:
+          - val_dualpth
+          - val_bedlam2
+
+exp_name_base: g1_dualpth_bedlam2
+exp_name_var: "_v1_4gpu"
+exp_name: ${exp_name_base}${exp_name_var}
+data_name: g1_dualpth_bedlam2
+
+network:
+    imgseq_dim: 1024
+
+pipeline:
+    args:
+        stats_file: "data/g1_dualpth_bedlam2_stats.npz"
+        pred_cam_stats_file: "data/g1_dualpth_bedlam2_pred_cam_stats.npz"
+
+data:
+    loader_opts:
+        train:
+            batch_size: 16
+
+train_datasets:
+    amass:
+        split_ratios: [0.95, 0.05, 0.0]
+    bedlam2:
+        split_ratios: [0.95, 0.05, 0.0]
+
+test_datasets:
+    amass:
+        split_ratios: [0.95, 0.05, 0.0]
+    bedlam2:
+        split_ratios: [0.95, 0.05, 0.0]
+
+pl_trainer:
+    devices: 4
+    strategy: ddp_find_unused_parameters_true
+
+logger:
+    group: ${data_name}
+    tags:
+        - gvhmr
+        - g1
+        - dualpth
+        - bedlam2
+        - mixed
+        - 4gpu

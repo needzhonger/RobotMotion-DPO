@@ -1,0 +1,26 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDualPthDataset
+  amass_pth_path: "filtered_amass.pth"
+  # g1_pth_path 即使填了也不读 (amass_only=true).
+  g1_pth_path:    "filtered_g1.pth"
+  g1_input_is_yup: true
+  amass_fps: 30.0
+  motion_frames: 120
+  # 关键 1: 整段一次进网络.
+  full_sequence: true
+  # 关键 2: 只读 AMASS, 不读 G1. pipeline 推理 root anchor 走 (0, 0.793, 0) fallback,
+  # callback 同时在 on_test_start 关 val_loss forward, encode_g1 不再要求 GT G1.
+  amass_only: true
+  # 关键 3: 静止单一相机, 跟训练 40% 的 static 类同源.
+  cam_augmentation: "static_v11"
+  canonicalize_first_frame: true
+  align_target: "pelvis"
+  floor_adjust: true
+  apply_az_to_ay_g1: true
+  split: "test"
+  split_seed: 42
+  split_ratios: [0.9, 0.05, 0.05]
+  ratio_lo: [0.7, 0.7, -.inf]
+  ratio_hi: [1.05, 1.05, .inf]
+  ratio_thr: 0.1
+  skip_substrings: []

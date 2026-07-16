@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: gvhmr
+Version: 1.0.0
+Summary: ['GVHMR training and inference']
+Home-page: https://github.com/zju3dv/GVHMR
+Author: Zehong Shen
+Dynamic: author
+Dynamic: home-page
+Dynamic: summary

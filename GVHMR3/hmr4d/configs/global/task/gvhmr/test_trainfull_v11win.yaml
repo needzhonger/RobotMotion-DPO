@@ -1,0 +1,25 @@
+# @package _global_
+# 全训练集窗口化 (120 帧, v11 动态相机) loss 扫描: 每个 window 落 pred npz + 记 loss,
+# 输出 predictions/loss_table.csv. 供 tools/select_loss_windows.py 抽 40 随机 + 40 高 loss.
+#
+# 用法:
+#     python tools/train.py exp=gvhmr/g1_dualpth global/task=gvhmr/test_trainfull_v11win \
+#         exp_name_var=_j2dchange \
+#         ckpt_path=outputs/g1_amass_dualpth/g1_dualpth_j2dchange/checkpoints/e469-s064390.ckpt
+defaults:
+  - override /data: mocap/testY
+  - override /test_datasets:
+      - test_dualpth_trainfull_v11win
+  - override /callbacks:
+      - prediction_writer/g1_dualpth_loss
+  - _self_
+
+task: test
+data_name: g1_dualpth_trainfull_v11win
+ckpt_path: ???
+
+pl_trainer:
+  devices: 1
+  precision: 32
+
+logger: null

@@ -1,0 +1,13 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDataset
+  # val 集 npz 配对: g1_paired/val/{amass_val,g1_val}/<同名>.npz
+  data_dir: "g1_paired/val"
+  amass_subdir: "amass_val"
+  g1_subdir: "g1_val"
+  motion_frames: 120
+  cam_augmentation: "v11"
+  canonicalize_first_frame: true
+  align_target: "pelvis"
+  floor_adjust: true
+  yaw_only_canon: true
+  apply_az_to_ay_g1: true

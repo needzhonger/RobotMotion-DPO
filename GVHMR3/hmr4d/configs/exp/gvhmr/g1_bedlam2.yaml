@@ -1,0 +1,26 @@
+# @package _global_
+# BEDLAM2 video observations + G1 robot targets.
+# Same G1 objective as g1_dualpth, but enables original GVHMR video features.
+defaults:
+    - g1_dualpth
+    - override /train_datasets:
+          - train_bedlam2
+    - override /test_datasets:
+          - val_bedlam2
+
+exp_name_base: g1_bedlam2
+data_name: bedlam2_g1
+
+network:
+    imgseq_dim: 1024
+
+pipeline:
+    args:
+        stats_file: "data/g1_bedlam2_stats.npz"
+        pred_cam_stats_file: "data/g1_bedlam2_pred_cam_stats.npz"
+
+data:
+    loader_opts:
+        train:
+            batch_size: 32
+            num_workers: 12

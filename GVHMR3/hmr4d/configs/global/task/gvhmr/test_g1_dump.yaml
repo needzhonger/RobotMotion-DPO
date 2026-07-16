@@ -1,0 +1,33 @@
+# @package _global_
+# 仅跑推理 + 落盘 npz (G1PredictionWriter), 不计算指标.
+# 生成的 npz 供 tools/blender_testset_pred_vs_human.py 消费.
+#
+# 用法:
+#   python tools/train.py exp=gvhmr/g1_dualpth global/task=gvhmr/test_g1_dump \
+#       ckpt_path=<ckpt>
+#
+# 输出: outputs/g1_amass_test/g1_dualpth_<var>/predictions/*.npz
+
+defaults:
+  - override /data: mocap/testY
+  - override /test_datasets:
+      - test_dualpth
+  - override /callbacks: []
+  - _self_
+
+task: test
+seed: null    # 不固定随机种子, 每次 diffusion 采样结果不同
+data_name: g1_amass_test
+ckpt_path: ???
+
+pl_trainer:
+  devices: 1
+  precision: 32
+
+logger: null
+
+callbacks:
+  prediction_writer:
+    _target_: hmr4d.utils.callbacks.prediction_writer.G1PredictionWriter
+    output_dir: ${output_dir}/predictions/
+    filename_template: "{name}_seg{seg_id:03d}.npz"

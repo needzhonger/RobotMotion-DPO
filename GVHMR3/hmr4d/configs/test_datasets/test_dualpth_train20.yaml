@@ -1,0 +1,28 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDualPthDataset
+  amass_pth_path: "filtered_amass.pth"
+  g1_pth_path:    "filtered_g1.pth"
+  g1_input_is_yup: true
+  amass_fps: 30.0
+  motion_frames: 120
+  full_sequence: true
+  # 推理时不让模型碰 G1 GT — root anchor 走 (0, 0.793, 0) fallback,
+  # PredictionWriter 同时把 skip_val_loss 设 True. 跟下游 viz 用真 GT G1 (从 filtered_g1.pth
+  # 独立加载) 是两件事, 互不影响.
+  amass_only: true
+  cam_augmentation: "static_v11"
+  canonicalize_first_frame: true
+  align_target: "pelvis"
+  floor_adjust: true
+  apply_az_to_ay_g1: true
+  # 走 val/test 路径 (deterministic, 不做训练侧 speed-aug + ratio_filter), 但 key 池抽 train.
+  split: "test"
+  split_seed: 42
+  split_ratios: [0.9, 0.05, 0.05]
+  subset_split: "train"
+  subset_n: 20
+  subset_seed: 7              # 换 seed 就拿不同 20 条
+  ratio_lo: [0.7, 0.7, -.inf]
+  ratio_hi: [1.05, 1.05, .inf]
+  ratio_thr: 0.1
+  skip_substrings: []

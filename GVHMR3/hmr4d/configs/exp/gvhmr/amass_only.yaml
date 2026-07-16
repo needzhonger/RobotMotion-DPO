@@ -1,0 +1,101 @@
+# @package _global_
+defaults:
+    - override /data: mocap/trainX_testY
+    - override /model: gvhmr/gvhmr_pl
+    - override /endecoder: gvhmr/v1_amass_local_bedlam_cam
+    - override /optimizer: adamw_2e-4
+    - override /scheduler_cfg: epoch_half_200_350
+    - override /train_datasets:
+          - train
+    - override /test_datasets:
+          - val
+    - override /callbacks:
+          - simple_ckpt_saver/every10e_top100
+          - prog_bar/prog_reporter_every0.02
+          - train_speed_timer/base
+          - lr_monitor/pl
+          - val_first_epoch/base
+    - override /network: gvhmr/relative_transformer
+
+exp_name_base: g1_motion
+exp_name_var: "_v1"
+exp_name: ${exp_name_base}${exp_name_var}
+data_name: g1_paired_amass
+
+network:
+    output_dim: 189
+    avgbeta: false
+    pred_cam_dim: 3
+    static_conf_dim: 6
+    obs_num_joints: 14
+    # AMASS has no real video → f_imgseq is always a zero placeholder.
+    # Setting imgseq_dim=0 skips building the LayerNorm + 1024->latent_dim
+    # embedder entirely, so the network ignores f_imgseq cleanly (no wasted
+    # parameters / forward compute). pipeline still passes f_imgseq=None;
+    # the network's `if f_imgseq is not None and hasattr(self, "imgseq_embedder")`
+    # guard handles both sides.
+    imgseq_dim: 0
+
+pipeline:
+    _target_: hmr4d.model.gvhmr.pipeline.gvhmr_pipeline.Pipeline
+    args_denoiser3d: ${network}
+    args:
+        endecoder_opt: ${endecoder}
+        normalize_cam_angvel: True
+        n_joints: 29
+        stats_file: "data/g1_stats.npz"
+        pred_cam_stats_file: "data/g1_pred_cam_stats.npz"
+        weights:
+            # 与原版 GVHMR (mixed.yaml) 对齐:
+            #   cr_j3d 500 / transl_c 1 / j2d 1000 / transl_w 1 / static_conf_bce 1
+            # 原版还有 cr_verts/verts2d 两项 SMPL-mesh loss(权重 500/1000),
+            # G1 没有 mesh,不开。simple_loss 隐含权重 1.0(直接累加,在 pipeline)。
+            cr_j3d: 500.0
+            transl_c: 1.0
+            j2d: 1000.0
+            transl_w: 1.0
+            static_conf_bce: 1.0
+
+        robot:
+            root_body_id: 0
+            mjcf_file: "unitree_description/mjcf/g1.xml"
+
+        static_conf:
+            # 原版 GVHMR HuMoR-style 阈值，单位 m/s（npz 里 g1_body_lin_vel_w 也是
+            # m/s，对采样率不敏感）。每个 body 的真正阈值 = vel_thr × vel_thr_mul[i]。
+            vel_thr: 0.15
+            # npz body_pos_w 是 BYD body 顺序：
+            #   0  pelvis,        14 L_ankle_pitch, 15 R_ankle_pitch,
+            #   18 L_ankle_roll,  19 R_ankle_roll  (foot proxies),
+            #   28 L_wrist_yaw,   29 R_wrist_yaw   (arm end-effectors)
+            body_ids: [14, 15, 18, 19, 28, 29]
+            # foot ×0.9（更严，脚需要更稳）；wrist ×0.8（最严，wrist 抖动小才算静）。
+            vel_thr_mul: [0.9, 0.9, 0.9, 0.9, 0.8, 0.8]
+
+data:
+    loader_opts:
+        train:
+            batch_size: 128
+            num_workers: 12
+
+pl_trainer:
+    precision: bf16-mixed
+    log_every_n_steps: 50
+    gradient_clip_val: 0.5
+    max_epochs: 500
+    check_val_every_n_epoch: 10
+    devices: 1
+
+logger:
+    _target_: pytorch_lightning.loggers.WandbLogger
+    project: gvhmr
+    name: ${exp_name}
+    save_dir: ${output_dir}
+    offline: false
+    log_model: false
+    job_type: train
+    group: ${data_name}
+    tags:
+        - gvhmr
+        - amass
+        - g1

@@ -1,0 +1,17 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDataset
+  # 最开始的 npz 配对数据: g1_paired/train/{amass,g1}/<同名>.npz
+  #   - AMASS: SMPL-X/markers 原始格式 (trans/root_orient/pose_body/betas...), z-up
+  #   - G1:    joint_pos/joint_vel/body_pos_w/body_quat_w/body_lin_vel_w/body_ang_vel_w (+fps), z-up
+  data_dir: "g1_paired/train"
+  amass_subdir: "amass"
+  g1_subdir: "g1"
+  motion_frames: 120
+  cam_augmentation: "v11"
+  # 对齐链路与 dualpth 完全一致: 先 z-up canonicalize G1 (只去 yaw) → az_to_ay → R_y(-90°) forward 对齐
+  #   → SMPL canonicalize (pelvis 落原点, 只去 yaw) → floor_adjust 脚踩 y=0.
+  canonicalize_first_frame: true
+  align_target: "pelvis"
+  floor_adjust: true
+  yaw_only_canon: true
+  apply_az_to_ay_g1: true

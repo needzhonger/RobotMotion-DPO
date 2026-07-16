@@ -1,0 +1,25 @@
+amass:
+  _target_: hmr4d.dataset.pure_motion.g1_amass.G1AmassDualPthDataset
+  amass_pth_path: "filtered_amass.pth"
+  g1_pth_path:    "filtered_g1.pth"
+  g1_input_is_yup: true
+  amass_fps: 30.0
+  motion_frames: 120
+  full_sequence: false        # 120 帧窗口化
+  amass_only: false           # 需 g1_target GT (算 loss + pred 锚 GT root)
+  cam_augmentation: "v11"     # 动态相机增强 (test 路径下逐 idx 可复现)
+  canonicalize_first_frame: true
+  yaw_only_canon: true
+  align_target: "pelvis"
+  floor_adjust: true
+  apply_az_to_ay_g1: true
+  split: "test"               # deterministic 路径 (按 (split_seed, idx) reseed)
+  split_seed: 42
+  split_ratios: [0.9, 0.05, 0.05]
+  subset_split: "train"       # 抽 train 池
+  subset_n: null              # 全部 train key (不随机抽)
+  subset_seed: 7
+  ratio_lo: [0.7, 0.7, -.inf]
+  ratio_hi: [1.05, 1.05, .inf]
+  ratio_thr: 0.1
+  skip_substrings: []

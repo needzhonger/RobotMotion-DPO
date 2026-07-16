@@ -1,0 +1,33 @@
+# @package _global_
+# 推理: 用训练好的 G1AmassDualPthDataset 模型, 对每条 motion 整段一次性 forward, dump npz.
+#
+# 用法:
+#     python tools/train.py exp=gvhmr/g1_dualpth global/task=gvhmr/test_g1_fullseq \
+#         ckpt_path=outputs/g1_amass_dualpth/g1_dualpth_v1/checkpoints/e499-sxxxxxx.ckpt
+#
+# 关键设计:
+#   - test_dualpth_fullseq: full_sequence=true + cam_augmentation=static_v11
+#       一条 AMASS motion (无论 1000+ 帧还是 120 帧) 一次性进网络;
+#       静止相机模拟训练里 40% 的 "static" 类别, cam_angvel ≈ 0, 避免长序列 OOD.
+#   - prediction_writer: on_test_batch_end 把 pred_g1 落盘成 npz, schema 与
+#       tools/infer_amass2g1.py 输出一致 (joint_pos / root_pos_w / root_quat_w, URDF z-up).
+defaults:
+  - override /data: mocap/testY
+  - override /test_datasets:
+      - test_dualpth_fullseq
+  - override /callbacks:
+      - prediction_writer/g1_dualpth
+  - _self_
+
+task: test
+seed: null    # 不固定随机种子, 每次 diffusion 采样结果不同
+data_name: g1_paired_amass_fullseq
+ckpt_path: ???    # 命令行必传
+
+pl_trainer:
+  devices: 1
+  # full-sequence 时 L 可能上千, attn mask 用 fp16 会偶发 NaN; test_step 已强制 precision=32
+  # (train.py:79-81), 这里冗余声明一下.
+  precision: 32
+
+logger: null
