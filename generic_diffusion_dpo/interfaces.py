@@ -120,3 +120,11 @@ class DiffusionDPOAdapter(nn.Module, ABC):
     def timestep_weights(self, timesteps: Tensor) -> Tensor:
         """Optional importance weights for non-uniform timestep sampling."""
         return torch.ones_like(timesteps, dtype=torch.float32)
+
+    def loss_mask(self, condition: Condition) -> Optional[Tensor]:
+        """Return an optional mask for per-sample denoising loss.
+
+        The returned mask must already match the doubled winner/loser batch.
+        Models without padded sequences can keep the default ``None``.
+        """
+        return None

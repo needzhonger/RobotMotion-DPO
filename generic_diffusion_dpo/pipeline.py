@@ -30,6 +30,7 @@ def run_dpo_post_training(
     device: Optional[torch.device] = None,
 ) -> DiffusionDPOAdapter:
     """End-to-end offline preference generation followed by Diffusion-DPO."""
+    conditions = list(conditions)
     build_preference_data(
         model=model,
         conditions=conditions,
@@ -48,7 +49,13 @@ def run_dpo_post_training(
         drop_last=False,
         collate_fn=collate_preference_batch,
     )
-    trainer = DPOTrainer(model, training, device=device)
+    trainer = DPOTrainer(
+        model,
+        training,
+        device=device,
+        reward_evaluator=reward_evaluator,
+        eval_conditions=conditions[: training.eval_num_conditions],
+    )
     return trainer.train(dataloader)
 
 

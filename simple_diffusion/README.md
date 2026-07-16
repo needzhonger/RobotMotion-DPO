@@ -67,3 +67,42 @@ python scripts/test.py --checkpoint outputs/best.pt \
 - `datasets/motion_dataset.py`：文件级划分、四元数处理、归一化和窗口切分
 - `scripts/train.py`：训练和验证入口
 - `scripts/test.py`：测试、指标计算和 NPZ 导出入口
+
+## DPO 后训练
+
+仓库根目录中的 `generic_diffusion_dpo` 通过 `dpo_adapter.py` 与本模型对接：
+
+```bash
+conda activate gvhmr
+python simple_diffusion/scripts/train_dpo.py \
+  --checkpoint simple_diffusion/outputs/best.pt \
+  --max-conditions 128 --candidates 6 --max-steps 500
+```
+
+快速检查完整链路：
+
+```bash
+python simple_diffusion/scripts/train_dpo.py --device cpu \
+  --max-conditions 2 --candidates 3 --sampling-steps 2 \
+  --batch-size 2 --max-steps 1 --output-dir /tmp/simple_diffusion_dpo_smoke
+```
+
+默认只启用 `motion_smoothness_reward`。Reward 的实现和启用配置分别位于
+`generic_diffusion_dpo/reward_functions.py` 与 `reward_config.py`。
+默认 `min_score_gap=1e-6`，适配归一化动作平滑度约 `1e-5` 的候选差异。
+
+### 使用 W&B 观察 DPO 效果
+
+```bash
+python simple_diffusion/scripts/train_dpo.py \
+  --wandb --wandb-project robot-motion-dpo --wandb-name smoothness-dpo \
+  --eval-every 100 --eval-num-conditions 16
+```
+
+无网络时可以先使用 `--wandb-mode offline`。面板会记录：
+
+- `train/total_loss`、`dpo_loss`、`sft_loss`、`grad_norm`；
+- `train/preference_accuracy`、policy/reference log-ratio 和 logit margin；
+- 完整 DDIM 采样后的 policy/reference Reward、Reward improvement 和胜率；
+- Reward 与 Reward delta 的分布直方图；
+- 动作方差及速度 RMS 的 policy/reference 比值，用于发现过度平滑导致的静止坍缩。

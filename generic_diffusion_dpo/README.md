@@ -102,3 +102,28 @@ simulator-free smoke-test reward equal to the negative mean squared second-order
 temporal difference. It expects normalized motion `[T, D]` and optionally reads
 `condition["mask"]`. Smoothness alone can favor low-activity motion, so combine
 or replace it with task/control rewards for real training.
+
+## W&B monitoring
+
+Enable W&B through `DPOTrainingConfig`:
+
+```python
+training = DPOTrainingConfig(
+    wandb_enabled=True,
+    wandb_project="robot-motion-dpo",
+    wandb_name="my-dpo-run",
+    wandb_mode="online",       # use "offline" without network
+    wandb_log_every=10,
+    eval_every=100,
+    eval_num_conditions=16,
+    eval_samples_per_condition=1,
+)
+```
+
+The trainer logs optimization metrics (`total_loss`, DPO/SFT losses, preference
+accuracy, policy/reference log-ratios, gradient norm and learning rate). At each
+evaluation interval it performs full policy/reference sampling from identical
+random noise and logs reward means, improvement, policy win rate and reward
+histograms. It also compares temporal motion variance and RMS velocity; ratios
+collapsing toward zero indicate that a smoothness reward may be producing nearly
+static motion.

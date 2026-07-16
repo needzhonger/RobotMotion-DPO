@@ -50,7 +50,9 @@ def build_reward_suite() -> RewardSuite:
             # ),
             # -----------------------------------------------------------------
         ],
-        min_score_gap=0.001,
+        # Normalized smoothness rewards differ at roughly 1e-5 in the provided
+        # simple_diffusion checkpoint, so use a small but non-zero smoke-test gap.
+        min_score_gap=1e-6,
     )
 
     # Runtime switches can be placed here. This is equivalent to setting the
