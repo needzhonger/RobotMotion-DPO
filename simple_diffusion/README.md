@@ -60,6 +60,52 @@ python scripts/test.py --checkpoint outputs/best.pt \
 
 测试脚本使用确定性 DDIM 加速采样，输出保持原目录结构，并保存为与机器人目标字段兼容的 NPZ。`--sampling-steps` 越大通常越精细，但速度越慢，最大值等于训练时的 `--diffusion-steps`。
 
+### 一键预测全部数据
+
+使用预训练模型递归预测 `data/` 中的所有动作：
+
+```bash
+conda activate gvhmr
+python simple_diffusion/scripts/predict_all.py
+```
+
+默认输出到 `simple_diffusion/outputs/vector_pairs_pred/`，子目录与
+`data/` 完全一致，文件名在原 stem 后增加 `_pred.npz`。输出仅包含：
+
+```text
+output_root_pos [T, 3]
+output_root_rot [T, 4]
+output_dof_pos  [T, 29]
+robot           scalar
+fps             scalar
+```
+
+使用 DPO checkpoint 预测时，基础 checkpoint 仍用于提供模型结构和归一化统计：
+
+```bash
+python simple_diffusion/scripts/predict_all.py \
+  --checkpoint simple_diffusion/outputs_dpo/checkpoints/policy_step_500.pt \
+  --base-checkpoint simple_diffusion/outputs/best.pt
+```
+
+输出目录会根据 checkpoint 类型自动选择：
+
+```text
+预训练 best.pt       → simple_diffusion/outputs/vector_pairs_pred/
+DPO policy_step_*.pt → simple_diffusion/outputs_dpo/vector_pairs_pred/
+```
+
+显式传入 `--output-dir` 时会覆盖上述自动选择。
+
+快速验证一个文件：
+
+```bash
+python simple_diffusion/scripts/predict_all.py --device cpu \
+  --sampling-steps 2 --max-files 1 --output-dir /tmp/vector_pairs_pred_smoke
+```
+
+重复执行默认会覆盖对应结果；使用 `--skip-existing` 可跳过已有文件。
+
 主要文件：
 
 - `models/temporal_denoiser.py`：时序卷积去噪网络
@@ -67,6 +113,7 @@ python scripts/test.py --checkpoint outputs/best.pt \
 - `datasets/motion_dataset.py`：文件级划分、四元数处理、归一化和窗口切分
 - `scripts/train.py`：训练和验证入口
 - `scripts/test.py`：测试、指标计算和 NPZ 导出入口
+- `scripts/predict_all.py`：递归预测全部数据并镜像保存 `_pred.npz`
 
 ## DPO 后训练
 

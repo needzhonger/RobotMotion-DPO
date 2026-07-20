@@ -1,7 +1,9 @@
 # Local datasets and generated training artifacts
 data/
+inputs/
 outputs/
 outputs_smoke/
+outputs_dpo/
 predictions/
 wandb/
 
@@ -14,3 +16,6 @@ venv/
 # Local tooling metadata
 .agents/
 .codex/
+
+# huge files
+vis_smplx.blend
