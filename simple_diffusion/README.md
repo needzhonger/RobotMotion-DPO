@@ -106,6 +106,28 @@ python simple_diffusion/scripts/predict_all.py --device cpu \
 
 重复执行默认会覆盖对应结果；使用 `--skip-existing` 可跳过已有文件。
 
+### 对比 DPO 前后的帧间抖动
+
+先分别用普通 checkpoint 和 DPO checkpoint 生成同一批预测，然后运行：
+
+```bash
+python simple_diffusion/scripts/evaluate_jitter.py
+```
+
+该命令会按相同的相对文件路径配对
+`outputs/vector_pairs_pred/` 和 `outputs_dpo/vector_pairs_pred/` 中的结果，使用
+DPO smoothness reward 相同的归一化二阶帧差均方进行评估。抖动值越低越好，输出中会给出
+两组预测的逐片段平均、总体加权平均及 DPO 相对改善百分比。
+
+如需保存每个文件的明细：
+
+```bash
+python simple_diffusion/scripts/evaluate_jitter.py \
+  --csv simple_diffusion/outputs_dpo/jitter_comparison.csv
+```
+
+也可以通过 `--outputs-dir`、`--outputs-dpo-dir` 和 `--base-checkpoint` 覆盖默认路径。
+
 主要文件：
 
 - `models/temporal_denoiser.py`：时序卷积去噪网络
@@ -114,6 +136,7 @@ python simple_diffusion/scripts/predict_all.py --device cpu \
 - `scripts/train.py`：训练和验证入口
 - `scripts/test.py`：测试、指标计算和 NPZ 导出入口
 - `scripts/predict_all.py`：递归预测全部数据并镜像保存 `_pred.npz`
+- `scripts/evaluate_jitter.py`：量化比较 DPO 前后的平均帧间抖动
 
 ## DPO 后训练
 
